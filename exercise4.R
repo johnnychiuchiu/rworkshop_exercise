@@ -50,7 +50,7 @@ gapminder$new_continent <- ifelse(gapminder$continent=="Americas",
                                   ifelse(gapminder$country %in% northamerica,
                                       "North America",
                                       "South America"), 
-                                  gapminder$continent)
+                                  gapminder$continent) #change the script into mutate with ifelse
 
 
 # Make a new object, gapminder_max that has only one observation per country, and has the maximum value that each country has had overtime for population, life expectancy, and GDP per capita. Hint: this step is a little more straightforward in dplyr than in base R; in base R, use aggregate and note that the first argument (the data) needs to only contain the columns you want to compute a summary measure on. Hint 2: for extra dplyr finesse, take a look at the dplyr function summarize_at.
@@ -75,6 +75,23 @@ gapminder_randomcountry %>% dplyr::group_by(continent) %>% dplyr::summarise(mean
 # Hint: Use the dplyr functions arrange() and sample_n(), they have similar syntax to other dplyr functions.
 
 
+##### Challenge Exercise: Complex Group Summary
+# Find all countries where life expectancy increased by at least 60% from 1952 to 2007.
+# Hint for dplyr: Remember that with dplyr, summarize computes one value for each group, while mutate computes one value for each row. Also, once data is grouped, you can index variables relative to their position in their group.
+# Hint for base R: you might find the merge function useful.
+gapminder1952 <- gapminder %>% filter(year=='1952') %>% select(country, lifeExp)
+colnames(gapminder1952)[which(names(gapminder1952) == "lifeExp")] <- "lifeExp_1952"
+
+gapminder_calculate <-merge(gapminder,gapminder1952,by='country',all.x= TRUE)
+gapminder_calculate$increPercent <- round(gapminder_calculate$lifeExp/gapminder_calculate$lifeExp_1952,3)
+gapminder_calculate_final <-gapminder_calculate %>% filter(increPercent>1.6)
+unique(gapminder_calculate_final$country)
+
+
+##### Challenge Exercise: Drops in Population
+# Find all countries that experienced a drop in population at any point in the timespan of the data.
+# Hint: look at the diff base R function or dplyr functions lead and lag (search help for “lead-lag”). Note that diff will result in one fewer values in the result than in the original, so you’ll need to address that.
+gapminder_drop <- gapminder %>% mutate(popLag=lag(pop))
 
 
 
