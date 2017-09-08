@@ -92,6 +92,6 @@ unique(gapminder_calculate_final$country)
 # Find all countries that experienced a drop in population at any point in the timespan of the data.
 # Hint: look at the diff base R function or dplyr functions lead and lag (search help for “lead-lag”). Note that diff will result in one fewer values in the result than in the original, so you’ll need to address that.
 gapminder_drop <- gapminder %>% mutate(popLag=lag(pop))
-
-
-
+gapminder_drop$diff <- gapminder_drop$pop - gapminder_drop$popLag
+gapminder_drop <- gapminder_drop %>% filter(year!=1952) %>% filter(diff<0)
+unique(gapminder_drop$country)
