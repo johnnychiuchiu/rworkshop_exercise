@@ -25,7 +25,12 @@ gapminder %>% group_by(year) %>% summarise(n_distinct(country))
 
 ##### Exercise: Selecting and Filtering
 # Show observations where life expectancy is greater than 80.
-
+gapminder %>% filter(lifeExp > 80)
 
 # Show only population and GDP per capita for Kenya for years before 1970.
+gapminder %>% filter(year< 1970 & country=='Kenya') %>% select(pop, gdpPercap)
+
 # Show the observation that has the maximum life expectancy
+gapminder %>% filter(lifeExp == max(gapminder$lifeExp))
+
+
