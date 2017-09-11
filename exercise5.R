@@ -1,0 +1,82 @@
+# Exercises Part 5: Visualization
+library(tidyverse)
+library(gapminder)
+gapminder<-read_csv("https://goo.gl/dWrc9m")
+schooldata <- read_csv("~/team/bootcamp/R/schooldata.csv")
+
+library(dplyr)
+library(ggplot2)
+
+##### Exercise: Make a Line Plot
+# Using the gapminder data, make a line plot showing the population of Afghanistan over time. Do this first with base R plotting and then with  ggplot. Hint: for base R, look at the help for plot.default and the type parameter. For ggplot, use the cheat sheet to find the correct geom to use.
+# Make sure to clean up the x and y labels, and give your plot a title.
+
+# base R
+data_afghanistan <- gapminder %>% filter(country=='Afghanistan')
+plot(data_afghanistan$year, data_afghanistan$pop, xlab='year', ylab='population', main='Afghanistan Population')
+lines(data_afghanistan$year, data_afghanistan$pop)
+dev.off()
+
+# ggplot
+ggplot(data=data_afghanistan,aes(x=year, y=pop),title=) + 
+  geom_line() + 
+  geom_point() + 
+  ggtitle('Afghanistan Population', subtitle = NULL)
+
+
+##### Exercise: Histogram
+# Make a histogram of life expectancies in 2007. Make the historgram with each of 5, 10, 20, and 40 bins. Use either base R or ggplot functions (or do both). Does the number of bins change your interpretation of the data at all? Do you see different trends?
+data_2007 <- gapminder %>% filter(year==2007)
+ggplot(data=data_2007, aes(lifeExp)) +
+  geom_histogram() + 
+  stat_bin(bins=5)
+
+ggplot(data=data_2007, aes(lifeExp)) +
+  geom_histogram() + 
+  stat_bin(bins=10)
+
+ggplot(data=data_2007, aes(lifeExp)) +
+  geom_histogram() + 
+  stat_bin(bins=20)
+
+ggplot(data=data_2007, aes(lifeExp)) +
+  geom_histogram() + 
+  stat_bin(bins=40)
+
+##### Exercise: Change Colors
+# Using the gapminder data, repeat the plot we made together of life expectancy vs. GDP per capita, with points colored by continent. Instead of using the default colors, use the palette below. Hint: use scale_colour_manual to set the colors.
+
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")  
+filter(gapminder, year==2002) %>% 
+  ggplot(aes(x=gdpPercap, y=lifeExp, color=continent)) + 
+  geom_point() + 
+  scale_colour_manual(values=cbPalette) + 
+  scale_x_log10()
+
+##### Exercise: Multiple lines and facets
+# Using the gapminder data, create a plot to show the change in life expectancy over time. Plot one line for each country. Color the lines by continent. Include decent labels on your plot. Hint: you will set 4 aesthetics: x, y, by, and color.
+ggplot(data=gapminder, aes(x=year,y=lifeExp,by=country,color=continent)) +  
+  geom_line() + 
+  geom_point() +
+  facet_grid(continent~.) +
+  theme(legend.position="none")
+
+##### Exercise: Add a Trend Line
+# Create a scatter plot of life expectancy vs. log of population for the year 2007. Color points by continent. Add a linear regression line for each continent. Hint: use geom_smooth and set method=lm for linear regression.
+# Then redo the plot with a single overall trend line (don’t worry about coloring points by continent anymore). What do you notice?
+gapminder %>% 
+  filter(year==2007) %>%
+  ggplot(aes(x=pop, y=lifeExp, color=continent)) +
+  geom_smooth(method=lm) +
+  scale_x_log10()
+
+gapminder %>% 
+  filter(year==2007) %>%
+  ggplot(aes(x=pop, y=lifeExp)) +
+  geom_smooth(method=lm) +
+  scale_x_log10()
+ 
+# In year 2007, for Asia and Africa, the more the pop is, the less lifeExp there will be.
+
+
