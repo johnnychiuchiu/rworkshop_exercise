@@ -7,9 +7,9 @@ output: html_document
 
 # SQL Part 2: Exercises
 
-question: <https://github.com/nuitrcs/databases_workshop/blob/master/sql/part2_exercises.md>
+question: <https://github.com/nuitrcs/databases_workshop/blob/master/sql/part2_exercises.md>  
 solution: <https://github.com/nuitrcs/databases_workshop/blob/master/sql/part2_exercises_with_answers.md>
-----
+
 
 # Setup
 ```{r}
