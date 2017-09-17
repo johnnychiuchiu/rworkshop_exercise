@@ -1,0 +1,173 @@
+---
+title: "Exercise SQL Part1"
+author: "Johnny Chiu"
+date: "2017/9/12"
+output: html_document
+---
+# SQL Part 1: Exercises
+
+squestion: <https://github.com/nuitrcs/databases_workshop/blob/master/sql/part1_exercises.md>  
+answers: <https://github.com/nuitrcs/databases_workshop/blob/master/sql/part1_exercises_with_answers.md>
+
+# Setup
+```{r}
+library(RPostgreSQL)
+con <- dbConnect(dbDriver("PostgreSQL"), host="pg", dbname="dvdrental") 
+# list all the table
+dbListTables(con)
+```
+
+There may be other ways to achieve the same result.  Remember that SQL commands are not case sensitive (but data values are).
+
+All of these exercises use the `dvdrental` database.  
+
+Exercises often use multiple commands or aspects of SQL, but they are titled/grouped by their focus.
+
+
+## Exercise: Describe Commands
+
+Get a list of the tables in the database.
+```{sql, connection=con}
+-- \d
+
+Select * from actor limit 1;
+```
+
+
+## Exercise: Select 
+
+Get a list of actors with the first name Julia.
+```{sql, connection=con}
+select * from actor where first_name='Julia';
+```
+
+Get a list of actors with the first name Chris, Cameron, or Cuba.  
+```{sql, connection=con}
+select * from actor where first_name in ('Chris','Cameron','Cuba');
+```
+
+Select the row from customer for customer named Jamie Rice.
+```{sql, connection=con}
+select * from customer where first_name='Jamie' and last_name='Rice';
+```
+
+Select amount and payment_date from payment where the amount paid was less than $1.  
+```{sql, connection=con}
+select amount, payment_date from payment where amount<1;
+```
+
+What are the different rental durations that the store allows?
+```{sql, connection=con}
+select distinct rental_duration from film;
+```
+
+## Exercise: Counting
+
+How many films are rated NC-17?  How many are rated PG or PG-13?
+```{sql, connection=con}
+select rating, count(*) from film group by rating;
+```
+
+Challenge: How many different customers have entries in the rental table?  [Hint](http://www.w3resource.com/sql/aggregate-functions/count-with-distinct.php)
+```{sql, connection=con}
+select count(distinct customer_id) from rental;
+```
+
+## Exercise: Order By
+
+What are the IDs of the last 3 customers to return a rental?
+```{sql, connection=con}
+select customer_id, return_date from rental where return_date is not null order by return_date desc limit 3;
+```
+
+## Exercise: Like
+
+Select film title that have "Dragon" in them.
+```{sql, connection=con}
+select * from film where title like '%Dragon%';
+```
+
+Challenge: only select titles that have just the word "Dragon" (not "Dragonfly") in them.
+
+## Exercise: Group By
+
+Does the average replacement cost of a film differ by rating?
+```{sql, connection=con}
+select 
+  rating,
+  avg(replacement_cost)
+from film
+group by rating
+order by avg(replacement_cost) desc;
+-- Yes
+```
+
+Which store (`store_id`) has the most customers whose first name starts with M?
+```{sql, connection=con}
+select store_id, count(*)
+from customer
+where first_name like 'M%'
+group by store_id
+order by count(*) desc;
+```
+
+Challenge: Are there any customers with the same last name? 
+```{sql, connection=con}
+select last_name, count(*)
+from customer
+group by last_name
+having count(*) >1;
+
+-- No
+```
+
+## Exercise: Functions
+
+What is the average rental rate of films?  Can you round the result to 2 decimal places?
+```{sql, connection=con}
+select round(avg(rental_rate),2)
+from film;
+```
+Challenge: What is the average time that people have rentals before returning?  Hint: the output you'll get may include a number of hours > 24.  You can use the function `justify_interval` on the result to get output that looks more like you might expect.
+```{sql, connection=con}
+select justify_interval(avg(time_interval)) from(
+  select rental_id, rental_date, return_date, return_date-rental_date time_interval
+  from rental
+) as tbl1
+
+--group by rental_id
+```
+
+
+
+Challenge 2: Select the 10 actors who have the longest names (first and last name combined).
+```{sql, connection=con}
+select concat(first_name,' ',last_name) full_name, char_length(concat(first_name,' ',last_name))
+from actor
+order by char_length(concat(first_name,' ',last_name)) desc
+limit 10;
+
+-- how to write it in a shorter form? I got so many "concat(first_name,' ',last_name)" as syntax.
+```
+
+## Exercise: Count, Group, and Order
+
+Which film (id) has the most actors?  
+```{sql, connection=con}
+select film_id, count(actor_id)
+from film_actor
+group by film_id
+order by count(actor_id) desc;
+
+-- sum, avg, max, min, distinct
+```
+
+Which actor (id) is in the most films?
+```{sql, connection=con}
+select actor_id, count(film_id)
+from film_actor
+group by actor_id
+order by count(film_id) desc;
+```
+
+
