@@ -1,0 +1,90 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# setup
+```{r}
+# install.packages("RPostgreSQL")
+library(RPostgreSQL)
+```
+
+# make a connection
+```{r}
+con <- dbConnect(dbDriver("PostgreSQL"), host="pg", dbname="dvdrental") 
+# list all the table
+dbListTables(con)
+
+# list column name
+dbListFields(con, "actor")
+```
+
+```{r}
+actor_subset <- dbGetQuery(con, "select * from actor where actor_id > 50")
+head(actor_subset)
+```
+```{r}
+head(actor_subset)
+dbGetQuery(con, "select * from actor where actor_id = 5")
+# dbSendQuery("update actor set actor_id=5000 where actor_id=5")
+```
+# create table
+```{r}
+mytbl <-data.frame(number=1:10 , letter=LETTERS[1:10])
+dbWriteTable(con, "mynewtable", mytbl)
+dbListFields(con, "mynewtable")
+dbSendQuery(con, "drop table mynewtable")
+```
+
+
+
+# dplyr
+
+```{r}
+library(tidyverse)
+library(dbplyr)
+con <- dbConnect(dbDriver("PostgreSQL"), 
+                 host="pg", 
+                 dbname="dvdrental") 
+```
+
+```{r}
+actortbl <- tbl(con, "actor")
+actortbl
+```
+```{r}
+actortbl %>% 
+  select(actor_id, first_name, last_name) %>%
+  filter(actor_id > 150) %>%
+  show_query()
+  
+```
+```{r}
+rentaltbl <- tbl(con, 'rental')
+rentaltbl %>% 
+  dplyr::group_by(customer_id) %>%
+  dplyr::summarize(count=n())
+
+```
+```{r}
+custtbl <- tbl(con, "customer")
+addrtbl <- tbl(con, "address")
+custtbl %>% 
+  inner_join(addrtbl, by="address_id") %>%
+  filter(postal_code=='52137') %>%
+  select(first_name, last_name, postal_code)
+```
+
+# write sql straightly from r
+
+```{sql, connection=con}
+select * from actor where actor_id > 150;
+```
+
+# disconnect
+```{r}
+dbDisconnect(con)
+rm(con)
+```
+
+
