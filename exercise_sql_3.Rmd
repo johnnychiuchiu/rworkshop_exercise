@@ -1,0 +1,128 @@
+---
+title: "Exercise SQL Part3"
+author: "Johnny Chiu"
+date: "2017/9/17"
+output: html_document
+---
+
+squestion: <https://github.com/nuitrcs/databases_workshop/blob/master/sql/part3_exercises.md>  
+answers: <https://github.com/nuitrcs/databases_workshop/blob/master/sql/part3_exercises_with_answers.md>
+
+# Setup
+```{r}
+library(RPostgreSQL)
+con <- dbConnect(dbDriver("PostgreSQL"), host="pg", dbname="dvdrental") 
+# list all the table
+dbListTables(con)
+```
+
+
+There may be other ways to achieve the same result.  Remember that SQL commands are not case sensitive (but data values are).
+
+## Exercise: Create and Populate Basketball Tables
+
+Using the example in [Part 3](part3.md#an-example), create the tables and then populate them with the data.  Either write insert statements or create csv files and import them.
+
+Hint: If you make a mistake, you might want to delete tables and start over.  If you need help deleting a table, please ask a workshop assistant or look at the material in the next part of the workshop to see the delete and drop commands.
+
+```
+drop schema public cascade;
+create schema public;
+```
+```{sql, connection=con}
+create table if not exists student2 (
+  id serial PRIMARY KEY,
+  first_name text,
+  last_name text,
+  admission_year smallint
+);
+
+```
+```{sql, connection=con}
+insert into student2 (first_name, last_name, admission_year)
+values
+  ('Johnny','Chiu','2017'),
+  ('Andrew','Hu','2017'),
+  ('Elaine','Su','2017');
+```
+
+## Exercise: Design a Database
+
+Get the data from https://raw.githubusercontent.com/nuitrcs/databases_workshop/master/datafiles/allstudents.csv
+
+Decide how to divide this data up into tables, create the tables, and import the data.
+
+Some instructors are listed as TBD: decide how to handle this data.
+
+The active column is 1 for true and 0 for false.  
+
+Note: For importing the data, you can use `\copy` with `psql`, but if you're running `psql` on a remote server (as we do in in-person workshops), the files would need to be on that server (you can use `scp` if you know how).  Another option for importing data is to use DataGrip.  Right click on the table name, and choose Import Data from File.  There is a dialogue box then that you can use to map data from your file to a table. 
+
+Steps:
+1. using 'ssh to app1'
+2. input 'psql -h pg -d dvdrental'
+3. then using the following command.
+
+Reference
+* https://stackoverflow.com/questions/12618232/copy-a-few-of-the-columns-of-a-csv-file-into-a-table
+* https://www.postgresql.org/docs/9.5/static/datatype.html
+
+
+```{sql, connection=con}
+create table if not exists course2 (
+  courseid int PRIMARY KEY,
+  title text,
+  startdate date,
+  instructorid smallint
+);
+```
+
+```
+\copy course2 (courseid, title, startdate, instructorid) FROM '/winhome/jchiu/msiaworkshop/allstudents.csv' CSV HEADER; 
+```
+
+```{sql, connection=con}
+create table if not exists instructor2 (
+  instructorid PRIMARY KEY,
+  instructorfirst text,
+  instructorlast text,
+  instructortitle text,
+  courseid int
+);
+```
+
+```
+\copy instructor2 (instructorid, instructorfirst, instructorlast, instructortitle, courseid) FROM '/winhome/jchiu/msiaworkshop/allstudents.csv' CSV HEADER; 
+```
+
+Output from psql
+```
+ERROR:  invalid input syntax for integer: "Dana"
+CONTEXT:  COPY instructor2, line 2, column instructorid: "Dana"
+```
+
+```{sql, connection=con}
+create table if not exists student2 (
+  studentid int PRIMARY KEY,
+  admissionyear smallint,
+  active smallint,
+  grade smallint
+);
+```
+
+```
+\copy instructor2 (instructorid, instructorfirst, instructorlast, instructortitle, courseid) FROM '/winhome/jchiu/msiaworkshop/allstudents.csv' CSV HEADER; 
+```
+Output from psql
+```
+ERROR:  invalid input syntax for integer: "Dana"
+CONTEXT:  COPY instructor2, line 2, column instructorid: "Dana"
+```
+
+
+```{sql, connection=con}
+create table if not exists course_student (
+  courseid int references course2(courseid),
+  studentid int references student2(studentid)
+);
+```
