@@ -1,4 +1,4 @@
-# rworkshop_exercise
+# workshop_exercise
 The exercises that I do for the MSiA boot camp
 
 
